@@ -57,7 +57,23 @@ contract Lending is Ownable {
      * @notice Allows users to withdraw collateral as long as it doesn't make them liquidatable
      * @param amount The amount of collateral to withdraw
      */
-    function withdrawCollateral(uint256 amount) public {}
+    function withdrawCollateral(uint256 amount) public {
+        if (amount == 0 || s_userCollateral[msg.sender] < amount) {
+            revert Lending__InvalidAmount(); // Revert if the amount is invalid
+        }
+
+        // Reduce the user's collateral
+        uint256 newCollateral = s_userCollateral[msg.sender] - amount;
+        s_userCollateral[msg.sender] = newCollateral;
+
+        // Transfer the collateral to the user
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        if (!success) {
+            revert Lending__TransferFailed();
+        }
+
+        emit CollateralWithdrawn(msg.sender, amount, i_cornDEX.currentPrice()); // Emit event for collateral withdrawal
+    }
 
     /**
      * @notice Calculates the total collateral value for a user based on their collateral balance
