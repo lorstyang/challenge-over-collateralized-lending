@@ -71,7 +71,7 @@ contract Lending is Ownable {
         if (!success) {
             revert Lending__TransferFailed();
         }
-
+        revert Lending__InvalidAmount();
         emit CollateralWithdrawn(msg.sender, amount, i_cornDEX.currentPrice()); // Emit event for collateral withdrawal
     }
 
